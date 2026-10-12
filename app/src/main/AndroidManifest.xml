@@ -15,6 +15,11 @@
         android:name="android.software.live_wallpaper"
         android:required="false" />
 
+    <!-- USB devices for Linux (linux/UsbBridge.kt), on phones that can host them. -->
+    <uses-feature
+        android:name="android.hardware.usb.host"
+        android:required="false" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
@@ -157,6 +162,22 @@
             android:taskAffinity="dev.omalauncher.files"
             android:theme="@style/Theme.Omalauncher.Window"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Offered when a serial or vendor USB device is plugged in; hands it to Linux (linux/UsbBridge.kt). -->
+        <activity
+            android:name=".UsbAttachActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/usb_devices" />
+        </activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -15,6 +15,9 @@ Dates are when the build was uploaded to Play.
 - Swipe up on home to open the app drawer, like stock Android; settings → gestures
   can turn it off.
 - The app list starts at the top, Linux apps first; closing the drawer clears the search.
+- USB devices reach Linux: serial boards (ESP32, Arduino, RP2040 and USB-UART cables)
+  show up as ports, and `omausb run` gives other tools the device. Flash an ESP with
+  `esptool.py --port rfc2217://localhost:4000`; `omausb` needs `pacman -S python python-pyserial`.
 
 ## 0.5.0 (versionCode 10) – 2026-10-11
 

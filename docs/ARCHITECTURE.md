@@ -30,7 +30,7 @@ touches it: `files/omarchy` is `~/.local/share/omarchy` and `files/widgets` is
   `WindowRenderer`, which draws one window into its activity's SurfaceView
   (or, for a widget's `Terminal`, into a TextureView in the tile)
 - `linux/`: proot, the rootfs setup and its update steps, pacman, coding
-  agents, and the bridges to Android (audio, URLs, /proc)
+  agents, and the bridges to Android (audio, URLs, /proc, USB)
 - `ui/`: the Compose home screen, the bar and its app list, settings and Files
 - `widgets/`: the widget engine; the language itself is in the `owl` module
 - `theme/`: Omarchy themes, applied to the launcher and the guest
@@ -62,6 +62,27 @@ again after every system update; if that fails, apps render in software
 (llvmpipe) and settings offers a retry. One app can opt out with
 `GALLIUM_DRIVER=llvmpipe app`. Terminal apps (foot) draw on the CPU and
 don't change.
+
+## USB
+
+Android only lets apps open USB devices (`UsbManager`), and the guest can't
+see `/dev/bus/usb`. `linux/UsbBridge.kt` listens on `usb.sock` in the runtime
+dir: the guest lists devices and opens one, getting its usbfs fd over
+SCM_RIGHTS (`wlbridge.c`, as Wayland buffers), after Android's permission
+dialog if needed. `omausb` (`assets/usb/omausb.py`, Python, needs `python`
+and `python-pyserial`) speaks USB over that fd with usbfs ioctls: `omausb run`
+hands it to a program in `$OMAUSB_FD`, and `omausb attach` serves a device's
+serial ports with userspace drivers (CDC-ACM, FTDI, CP210x, CH34x, PL2303).
+
+Each serial port becomes a pty, `/run/user/0/usb/ttyACM0` say, and
+`rfc2217://localhost:4000`. The pty has no modem lines, and Android denies
+apps the ioctls for them, which pyserial won't open a port without; so
+pyserial programs (esptool, monitors) use the RFC 2217 URL, which carries
+DTR/RTS and line settings, and terminal programs use the pty, which carries
+the baud rate and raises DTR/RTS while open. Plugging in a device the
+launcher has permission for starts `omausb attach` (only while Linux runs);
+`UsbAttachActivity` is what Android offers for serial and vendor devices, and
+"Always" there keeps the permission.
 
 ## Updates
 

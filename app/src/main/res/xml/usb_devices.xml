@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The USB devices UsbAttachActivity offers to take for Linux, by device or interface class:
+     not keyboards, storage or audio, which Android handles itself. -->
+<resources>
+    <!-- CDC: USB-Serial-JTAG (ESP32-S3/C3/C6), RP2040, Arduino, STM32 virtual COM ports -->
+    <usb-device class="2" />
+    <!-- Vendor-specific: FTDI, CP210x, CH340, PL2303, debug probes -->
+    <usb-device class="255" />
+    <!-- Application-specific: DFU bootloaders -->
+    <usb-device class="254" />
+    <!-- Espressif, 0x303a -->
+    <usb-device vendor-id="12346" />
+</resources>

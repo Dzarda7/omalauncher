@@ -29,6 +29,7 @@ import dev.omalauncher.linux.Proot
 import dev.omalauncher.linux.LinuxState
 import dev.omalauncher.linux.SystemUpdates
 import dev.omalauncher.linux.TerminalFont
+import dev.omalauncher.linux.UsbBridge
 import dev.omalauncher.linux.bundledIcons
 import dev.omalauncher.linux.defaultApps
 import dev.omalauncher.linux.loadLinuxApps
@@ -86,6 +87,9 @@ class Runtime(
     val themes = ThemeStore(context, proot, isLinux = { linux }, onConfigChanged = ::syncGuest)
     private val audio = AudioBridge(proot)
     private val openBridge = OpenBridge(context, proot, onOpenFiles = ::openFiles)
+
+    /** USB devices for the guest; plugging one in mustn't ask to install Linux, so it only launches while Linux is up. */
+    val usb = UsbBridge(context, proot, launch = { if (linux) launch(it) })
     val agents = AgentStore(proot, onChanged = ::syncGuest)
     val pacman = Pacman(context, proot)
     val widgets = WidgetEngine(context, proot, this)
@@ -104,6 +108,7 @@ class Runtime(
                 { defaultApps(proot.applications) },
                 { bundledIcons(context, proot.home) },
                 openBridge::managed,
+                usb::managed,
                 pacman::managed,
                 agents::managed,
                 themes::managed,
@@ -293,6 +298,7 @@ class Runtime(
         withContext(Dispatchers.IO) {
             provisioner.sync()
             audio.start()
+            usb.start()
             synchronized(server) { server.input.setKeymap(proot.keymap.path) }
             agents.load()
         }
